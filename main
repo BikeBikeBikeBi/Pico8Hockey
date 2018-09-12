@@ -1,0 +1,171 @@
+--hockey prototype
+function _init()
+make_player()
+make_world()
+pucks = {}
+buttonpress = 0
+end
+
+function make_player()
+player = {}
+player.x = 58
+player.y = 58
+player.ax = 0
+player.ay = 0
+player.sprite = 1
+player.state = 1
+player.moving = false
+end
+
+function make_world()
+ice_friction = .01
+end
+
+function shoot()
+local p = {
+sp=46,
+x=player.x,
+y=player.y,
+dx=0,
+dy=-3,
+puckbounce = 0}
+add(pucks,p)
+end
+
+function buttons()	
+	if (btn(0)) then
+		player.ax -= .1
+		player.moving = true
+	end
+	
+	if (btn(1)) then
+		player.ax += .1 
+		player.moving = true
+	end
+
+	if (btn(2)) then
+		player.ay -= .1
+		player.moving = true
+	end
+	
+	if (btn(3)) then
+		player.ay += .1
+		player.moving = true
+	end
+	
+	if (btnp(4)) then
+		shoot()
+		buttonpress += 1
+	end
+
+player.x += player.ax
+player.y += player.ay
+
+if player.ax > 0 then
+	player.ax -= ice_friction
+end
+
+if player.ax < 0 then
+	player.ax += ice_friction
+end
+
+if player.ay > 0 then
+	player.ay -= ice_friction
+end
+
+if player.ay < 0 then
+	player.ay += ice_friction
+end
+
+if player.moving == true then
+	if player.sprite > 2 then 
+		player.sprite = 1
+	end
+player.sprite += 1
+end
+
+for p in all(pucks) do
+if p.x > 126 then
+p.dx = -p.dx
+p.puckbounce +=1
+end
+if p.y < -12 then
+p.dy = -p.dy
+p.puckbounce +=1
+end
+if p.x < 0 then
+p.puckbounce +=1
+p.dx = -p.dx
+p.puckbounce +=1
+end
+if p.y > 124 then
+p.dy = -p.dy
+p.puckbounce +=1
+end
+if p.puckbounce > 4 then
+del(pucks, p)
+end
+end
+
+end
+
+function limits()
+if player.x > 124 then
+player.x = 124
+player.ax = -player.ax
+end
+if player.x < 0 then
+player.x = 0
+player.ax = -player.ax
+end
+if player.y > 124 then
+player.y = 124
+player.ay = -player.ay
+end
+if player.y < 0 then
+player.y = 0
+player.ay = -player.ay
+end
+end
+
+function _update()
+buttons()
+limits()
+for p in all(pucks) do
+p.x += p.dx
+p.y += p.dy
+end
+
+end
+
+function draw_player(x,y,sprite)
+	if sprite == 1 then
+		sspr(0,0,16,16,x,y)
+	end
+	if sprite == 2 then
+		sspr(16,0,16,16,x,y)
+	end
+	if sprite == 3 then
+		sspr(32,0,16,16,x,y)
+	end
+	if sprite == 4 then
+		sspr(0,16,16,16,x,y)
+	end
+	if sprite == 5 then
+		sspr(16,16,16,16,x,y)
+	end
+	if sprite == 6 then
+		sspr(32,16,16,16,x,y)
+	end
+player.moving = false
+end
+
+function _draw()
+cls()
+map(0,0,0,0,128,128)
+draw_player(player.x,player.y,player.sprite)
+for p in all(pucks) do
+	circfill(p.x+16,p.y+16,2,0)
+end
+print(buttonpress,20,80)
+end
